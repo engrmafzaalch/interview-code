@@ -6,15 +6,15 @@
         <option value="" selected default>Select</option>
         <option :value="h" v-for="h in headings" :key="h">{{ h }}</option>
       </select>
-      <select name="" id="" @change="secondSelected" v-show="firstSelected">
+      <select name="" id="" @change="secondSelected" v-show="primaryFilterSelected">
         <option value="" selected default>Select</option>
 
-        <option :value="h" v-for="h in secondFilter" :key="h">{{ h }}</option>
+        <option :value="h" v-for="h in secondFilterDropdown" :key="h">{{ h }}</option>
       </select>
       <input
         :type="inputType"
         v-show="secondFilterSelected"
-        v-model="filterVal"
+        v-model="thirdFilterVal"
       />
     </div>
     <table>
@@ -41,38 +41,37 @@ export default {
   data() {
     return {
       borrowers: borrowersData,
-      firstSelected: false,
+      primaryFilterSelected: false,
       secondFilterSelected: false,
-      firstVal: "",
-      secondFilter: [],
-      secondVal: "",
-      filterVal: "",
+      primaryFilterVal: "",
+      secondFilterDropdown: [],
+      secondFilterVal: "",
+      thirdFilterVal: "",
       inputType: "",
     };
   },
   methods: {
     colSelected(ev) {
-      this.firstSelected = true;
-      this.filterVal = "";
+      this.primaryFilterSelected = true;
+      this.thirdFilterVal = "";
       this.secondFilterSelected = false;
       const selected = ev.target.value;
-      this.firstVal = selected;
+      this.primaryFilterVal = selected;
       const type = typeof this.borrowers[0][selected];
-      console.log(type);
+      
       if (selected === "dateOfBirth" || selected === "startDate") {
-        // this.firstVal = "date";
-        this.secondFilter = ["greaterThan", "lessThan"];
+        this.secondFilterDropdown = ["greaterThan", "lessThan"];
         this.inputType = "date";
       } else if (type === "string") {
-        this.secondFilter = ["equals", "includes"];
+        this.secondFilterDropdown = ["equals", "includes"];
         this.inputType = "text";
       } else if (type === "number") {
-        this.secondFilter = ["greaterThan", "lessThan"];
+        this.secondFilterDropdown = ["greaterThan", "lessThan"];
         this.inputType = "number";
       }
     },
     secondSelected(ev) {
-      this.secondVal = ev.target.value;
+      this.secondFilterVal = ev.target.value;
       this.secondFilterSelected = true;
     },
   },
@@ -81,31 +80,31 @@ export default {
       return Object.keys(this.borrowers[0]);
     },
     rows() {
-      if (!this.filterVal) return this.borrowers;
-      else if (this.secondVal == "includes")
+      if (!this.thirdFilterVal) return this.borrowers;
+      else if (this.secondFilterVal == "includes")
         return this.borrowers.filter((b) =>
-          b[this.firstVal].toLowerCase().includes(this.filterVal.toLowerCase())
+          b[this.primaryFilterVal].toLowerCase().includes(this.thirdFilterVal.toLowerCase())
         );
-      else if (this.secondVal == "equals")
+      else if (this.secondFilterVal == "equals")
         return this.borrowers.filter(
-          (b) => b[this.firstVal].toLowerCase() === this.filterVal.toLowerCase()
+          (b) => b[this.primaryFilterVal].toLowerCase() === this.thirdFilterVal.toLowerCase()
         );
-      else if (this.inputType === "number" && this.secondVal == "greaterThan")
-        return this.borrowers.filter((b) => b[this.firstVal] > +this.filterVal);
-      else if (this.inputType === "number" && this.secondVal == "lessThan")
-        return this.borrowers.filter((b) => b[this.firstVal] < +this.filterVal);
-      else if (this.inputType === "date" && this.secondVal == "greaterThan")
+      else if (this.inputType === "number" && this.secondFilterVal == "greaterThan")
+        return this.borrowers.filter((b) => b[this.primaryFilterVal] > +this.thirdFilterVal);
+      else if (this.inputType === "number" && this.secondFilterVal == "lessThan")
+        return this.borrowers.filter((b) => b[this.primaryFilterVal] < +this.thirdFilterVal);
+      else if (this.inputType === "date" && this.secondFilterVal == "greaterThan")
         return this.borrowers.filter((b) => {
           return (
-            new Date(b[this.firstVal]).getTime() >
-            new Date(this.filterVal).getTime()
+            new Date(b[this.primaryFilterVal]).getTime() >
+            new Date(this.thirdFilterVal).getTime()
           );
         });
-      else if (this.inputType === "date" && this.secondVal == "lessThan")
+      else if (this.inputType === "date" && this.secondFilterVal == "lessThan")
         return this.borrowers.filter((b) => {
           return (
-            new Date(b[this.firstVal]).getTime() <
-            new Date(this.filterVal).getTime()
+            new Date(b[this.primaryFilterVal]).getTime() <
+            new Date(this.thirdFilterVal).getTime()
           );
         });
     },
